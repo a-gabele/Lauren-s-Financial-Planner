@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lauren's Financial Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg1:#ffffff;--bg2:#f5f5f3;--bg3:#eeede8;
+  --bg-info:#e6f1fb;--bg-danger:#fcebeb;--bg-success:#eaf3de;--bg-warn:#faeeda;
+  --tx1:#1a1a18;--tx2:#6b6b67;--tx3:#9b9b96;
+  --tx-info:#185fa5;--tx-danger:#a32d2d;--tx-success:#3b6d11;--tx-warn:#854f0b;
+  --bd3:rgba(0,0,0,0.12);--bd2:rgba(0,0,0,0.22);--bd1:rgba(0,0,0,0.35);
+  --bd-info:#b5d4f4;--bd-danger:#f7c1c1;
+  --r-md:8px;--r-lg:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --green:#1D9E75;--amber:#BA7517;--red:#A32D2D;--blue:#4f86e8;--purple:#a855c8;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg1:#1e1e1c;--bg2:#2a2a27;--bg3:#252522;
+  --bg-info:#042c53;--bg-danger:#501313;--bg-success:#173404;--bg-warn:#412402;
+  --tx1:#f0efea;--tx2:#a0a09a;--tx3:#70706a;
+  --tx-info:#85b7eb;--tx-danger:#f09595;--tx-success:#97c459;--tx-warn:#ef9f27;
+  --bd3:rgba(255,255,255,0.1);--bd2:rgba(255,255,255,0.2);--bd1:rgba(255,255,255,0.32);
+  --bd-info:#0c447c;--bd-danger:#791f1f;
+}}
+html,body{height:100%;font-family:var(--font);background:var(--bg3);color:var(--tx1);}
+body{display:flex;flex-direction:column;}
+
+/* ── TOPBAR ── */
+.topbar{background:linear-gradient(135deg,#a855c8 0%,#7c3aed 30%,#4f86e8 65%,#22c9a0 100%);padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;height:58px;position:relative;overflow:hidden;}
+.topbar::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 2px,transparent 2px,transparent 14px);pointer-events:none;}
+.topbar-title{font-family:'Pacifico',cursive;font-size:22px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.18);position:relative;z-index:1;}
+.topbar-right{display:flex;align-items:center;gap:10px;position:relative;z-index:1;}
+.topbar-badge{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,0.9);font-weight:500;}
+
+/* ── LAYOUT ── */
+.app-wrap{flex:1;display:flex;overflow:hidden;padding:16px;gap:16px;}
+.app{display:flex;flex:1;border:0.5px solid var(--bd3);border-radius:var(--r-lg);overflow:hidden;background:var(--bg1);min-width:0;}
+.sidebar{width:230px;min-width:230px;border-right:0.5px solid var(--bd3);display:flex;flex-direction:column;background:var(--bg2);}
+.sidebar-hdr{padding:14px 16px;border-bottom:0.5px solid var(--bd3);}
+.sidebar-lbl{font-size:10px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.client-list{flex:1;overflow-y:auto;padding:6px;}
+.client-item{padding:9px 12px;border-radius:var(--r-md);cursor:pointer;margin-bottom:2px;border:0.5px solid transparent;transition:all 0.15s;}
+.client-item:hover{background:var(--bg1);border-color:var(--bd3);}
+.client-item.active{background:var(--bg1);border-color:var(--bd2);}
+.client-name{font-size:13px;font-weight:500;}
+.client-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
+.add-btn{margin:6px;padding:9px;border-radius:var(--r-md);border:0.5px dashed var(--bd2);background:none;cursor:pointer;font-size:12px;color:var(--tx2);transition:all 0.15s;font-family:var(--font);width:calc(100% - 12px);}
+.add-btn:hover{background:var(--bg1);color:var(--tx1);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
+.client-hdr{font-size:15px;font-weight:500;}
+.toolbar-right{display:flex;gap:8px;}
+.tabs{display:flex;border-bottom:0.5px solid var(--bd3);padding:0 12px;flex-shrink:0;overflow-x:auto;}
+.tab{padding:11px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all 0.15s;white-space:nowrap;}
+.tab:hover{color:var(--tx1);}
+.tab.active{color:var(--tx1);border-bottom-color:var(--tx1);}
+.tab-content{flex:1;overflow-y:auto;padding:16px;}
+
+/* ── COMMON COMPONENTS ── */
+.sec{font-size:10px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:0.08em;margin:16px 0 8px;}
+.sec:first-child{margin-top:0;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fl{font-size:11px;color:var(--tx2);}
+.fi{font-size:13px;padding:6px 8px;border-radius:var(--r-md);border:0.5px solid var(--bd3);background:var(--bg2);color:var(--tx1);font-family:var(--font);width:100%;}
+.fi:focus{outline:none;border-color:var(--bd1);}
+select.fi{cursor:pointer;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.mc{background:var(--bg2);border-radius:var(--r-md);padding:12px;}
+.ml{font-size:11px;color:var(--tx2);margin-bottom:4px;}
+.mv{font-size:18px;font-weight:500;}
+.mv.g{color:var(--green);}
+.mv.a{color:var(--amber);}
+.mv.r{color:var(--red);}
+.btn{padding:7px 14px;border-radius:var(--r-md);border:0.5px solid var(--bd2);background:var(--bg1);font-size:12px;font-weight:500;cursor:pointer;color:var(--tx1);transition:all 0.15s;font-family:var(--font);}
+.btn:hover{background:var(--bg2);}
+.btn.pri{background:var(--tx1);color:var(--bg1);border-color:transparent;}
+.btn.pri:hover{opacity:0.85;}
+.btn.sm{padding:4px 10px;font-size:11px;}
+.btn.danger{color:var(--tx-danger);border-color:var(--bd-danger);}
+.btn.danger:hover{background:var(--bg-danger);}
+.divider{height:0.5px;background:var(--bd3);margin:12px 0;}
+.badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg-info);color:var(--tx-info);font-weight:500;display:inline-block;}
+.badge.g{background:var(--bg-success);color:var(--tx-success);}
+.badge.a{background:var(--bg-warn);color:var(--tx-warn);}
+.badge.r{background:var(--bg-danger);color:var(--tx-danger);}
+.pb-wrap{height:6px;background:var(--bd3);border-radius:3px;margin:6px 0 3px;}
+.pb-fill{height:100%;border-radius:3px;background:var(--green);transition:width 0.4s;}
+.pb-fill.a{background:var(--amber);}
+.pb-fill.r{background:var(--red);}
+input[type=number]::-webkit-inner-spin-button{opacity:0.4;}
+.no-data{text-align:center;padding:40px;color:var(--tx2);font-size:13px;}
+.no-client{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--tx2);gap:8px;}
+.ht{font-size:11px;color:var(--tx2);margin-top:2px;}
+
+/* ── COLLAPSIBLE SECTIONS ── */
+.collapsible{border:0.5px solid var(--bd3);border-radius:var(--r-md);margin-bottom:8px;overflow:hidden;}
+.coll-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;background:var(--bg2);user-select:none;}
+.coll-hdr:hover{background:var(--bg3);}
+.coll-title{font-size:12px;font-weight:500;}
+.coll-arrow{font-size:10px;color:var(--tx2);transition:transform 0.2s;}
+.coll-arrow.open{transform:rotate(180deg);}
+.coll-body{padding:14px;background:var(--bg1);}
+
+/* ── OVERVIEW DASHBOARD ── */
+.ov-top{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.ov-score-ring{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg2);border-radius:var(--r-lg);padding:16px;}
+.ov-score-num{font-size:40px;font-weight:500;line-height:1;}
+.ov-score-lbl{font-size:11px;color:var(--tx2);margin-top:4px;}
+.ov-cf{background:var(--bg2);border-radius:var(--r-lg);padding:16px;}
+.cf-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:0.5px solid var(--bd3);}
+.cf-row:last-child{border-bottom:none;font-weight:500;}
+.cf-lbl{color:var(--tx2);}
+.cf-val{font-weight:500;}
+.alloc-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:1px;margin:8px 0 4px;}
+.alloc-seg{height:100%;transition:flex 0.4s;}
+.alloc-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+.alloc-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.alloc-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tx2);}
+
+/* ── HOLDINGS ── */
+.hld-table{width:100%;border-collapse:collapse;font-size:12px;}
+.hld-table th{font-size:10px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:0.05em;padding:6px 8px;text-align:left;border-bottom:0.5px solid var(--bd3);}
+.hld-table th.r{text-align:right;}
+.hld-table td{padding:6px 8px;border-bottom:0.5px solid var(--bd3);vertical-align:middle;}
+.hld-table td.r{text-align:right;font-variant-numeric:tabular-nums;}
+.hld-table tr:hover td{background:var(--bg2);}
+.ticker{display:inline-block;font-size:11px;font-weight:500;background:var(--bg-info);color:var(--tx-info);border-radius:4px;padding:1px 6px;letter-spacing:0.04em;}
+.gp{color:var(--green);}
+.gn{color:var(--red);}
+.hi{font-size:12px;padding:4px 6px;border-radius:6px;border:0.5px solid var(--bd3);background:var(--bg2);color:var(--tx1);font-family:var(--font);width:100%;}
+.hi:focus{outline:none;border-color:var(--bd1);}
+.add-hld-row{display:grid;grid-template-columns:80px 1fr 90px 100px 90px 36px;gap:6px;align-items:center;padding:10px;background:var(--bg2);border-radius:var(--r-md);margin-bottom:12px;border:0.5px solid var(--bd3);}
+
+/* ── PROJECTIONS ── */
+.chart-wrap{position:relative;width:100%;height:220px;margin:10px 0;}
+.waterfall-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.wf-label{font-size:12px;color:var(--tx2);width:140px;flex-shrink:0;}
+.wf-bar-bg{flex:1;height:14px;background:var(--bd3);border-radius:3px;overflow:hidden;}
+.wf-bar-fill{height:100%;border-radius:3px;}
+.wf-val{font-size:12px;font-weight:500;min-width:70px;text-align:right;}
+
+/* ── SCENARIOS ── */
+.scenario-card{border:0.5px solid var(--bd3);border-radius:var(--r-md);padding:14px;margin-bottom:10px;}
+.scenario-card.saved-sc{border-color:var(--bd-info);}
+.sl-row{display:flex;align-items:center;gap:10px;margin:5px 0;}
+.sl-lbl{font-size:12px;color:var(--tx2);width:150px;flex-shrink:0;}
+.sl-row input[type=range]{flex:1;accent-color:var(--green);}
+.sl-val{font-size:12px;font-weight:500;min-width:70px;text-align:right;}
+.res-hl{background:var(--bg2);border-radius:var(--r-md);padding:10px 14px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;}
+.res-lbl{font-size:11px;color:var(--tx2);}
+.res-val{font-size:15px;font-weight:500;}
+.saved-scenarios{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.saved-sc-card{border:0.5px solid var(--bd3);border-radius:var(--r-md);padding:12px;cursor:pointer;transition:all 0.15s;}
+.saved-sc-card:hover{border-color:var(--bd2);}
+.saved-sc-card.active-sc{border-color:var(--bd-info);background:var(--bg-info);}
+.saved-sc-name{font-size:13px;font-weight:500;margin-bottom:4px;}
+.saved-sc-delta{font-size:12px;}
+
+/* ── GOALS ── */
+.goal-card{border:0.5px solid var(--bd3);border-radius:var(--r-md);padding:14px;margin-bottom:8px;}
+.goal-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.goal-title{font-size:13px;font-weight:500;}
+
+/* ── HEALTH SCORE ── */
+.hs-score-bar{display:flex;align-items:stretch;gap:12px;background:var(--bg2);border-radius:var(--r-md);padding:14px;margin-bottom:16px;}
+.hs-score-num{font-size:36px;font-weight:500;line-height:1;min-width:60px;text-align:center;}
+.hs-components{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex:1;}
+.hs-comp{background:var(--bg1);border-radius:var(--r-md);padding:8px 10px;border:0.5px solid var(--bd3);}
+.hs-comp-lbl{font-size:10px;color:var(--tx2);margin-bottom:2px;}
+.hs-comp-val{font-size:14px;font-weight:500;}
+
+/* ── MILESTONE TRACK ── */
+.timeline-wrap{position:relative;padding:34px 0;margin-bottom:4px;overflow-x:auto;}
+.ms-track{display:flex;align-items:center;min-width:100%;}
+.ms-line{flex:1;height:2px;background:var(--bd3);}
+.ms-line.done{background:var(--green);}
+.ms-dot-wrap{position:relative;flex-shrink:0;display:flex;flex-direction:column;align-items:center;}
+.ms-dot{width:12px;height:12px;border-radius:50%;background:var(--bd2);z-index:1;}
+.ms-dot.done{background:var(--green);}
+.ms-dot.cur{background:var(--amber);box-shadow:0 0 0 4px rgba(186,117,23,0.18);}
+.ms-top{position:absolute;bottom:18px;font-size:10px;color:var(--tx2);white-space:nowrap;transform:translateX(-50%);left:50%;}
+.ms-bot{position:absolute;top:18px;font-size:10px;font-weight:500;white-space:nowrap;transform:translateX(-50%);left:50%;}
+
+/* ── TARGET CARDS ── */
+.tc{border:0.5px solid var(--bd3);border-radius:var(--r-md);padding:14px;position:relative;margin-bottom:10px;}
+.tc-lbl{font-size:11px;color:var(--tx2);margin-bottom:3px;}
+.tc-name{font-size:13px;font-weight:500;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc-status{position:absolute;top:12px;right:12px;}
+.tc-bar-bg{height:8px;background:var(--bd3);border-radius:4px;margin-bottom:5px;}
+.tc-bar-fill{height:100%;border-radius:4px;}
+.tc-nums{display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);}
+
+/* ── NOTES ── */
+.notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.note-card{border:0.5px solid var(--bd3);border-radius:var(--r-md);padding:14px;background:var(--bg1);}
+.note-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.note-card-ttl{font-size:11px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:0.06em;}
+.note-ta{width:100%;border:0.5px solid var(--bd3);border-radius:var(--r-md);background:var(--bg2);color:var(--tx1);font-family:var(--font);font-size:13px;padding:8px 10px;resize:vertical;min-height:90px;line-height:1.6;}
+.note-ta:focus{outline:none;border-color:var(--bd1);}
+.note-ta::placeholder{color:var(--tx3);}
+.notes-full{border:0.5px solid var(--bd3);border-radius:var(--r-md);padding:14px;background:var(--bg1);margin-bottom:12px;}
+.tag-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;border:0.5px solid var(--bd3);border-radius:var(--r-md);background:var(--bg2);min-height:38px;cursor:text;}
+.tag-pill{display:inline-flex;align-items:center;gap:4px;background:var(--bg1);border:0.5px solid var(--bd2);border-radius:20px;padding:2px 8px;font-size:12px;}
+.rm-tag{cursor:pointer;color:var(--tx2);font-size:14px;line-height:1;background:none;border:none;padding:0;font-family:inherit;}
+.rm-tag:hover{color:var(--tx-danger);}
+.tag-input{border:none;background:transparent;outline:none;font-family:var(--font);font-size:12px;color:var(--tx1);min-width:80px;flex:1;}
+.dr{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.dr input{flex:1;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:100;}
+.modal{background:var(--bg1);border-radius:var(--r-lg);border:0.5px solid var(--bd3);padding:20px;width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.18);max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:500;margin-bottom:14px;}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-title">✨ Lauren's super duper financial planner ✨</div>
+  <div class="topbar-right"><div class="topbar-badge">Data saved locally</div></div>
+</div>
+<div class="app-wrap">
+  <div class="app">
+    <div class="sidebar">
+      <div class="sidebar-hdr"><div class="sidebar-lbl">Clients</div></div>
+      <div class="client-list" id="clientList"></div>
+      <button class="add-btn" onclick="openAddClient()">+ Add client</button>
+    </div>
+    <div class="main">
+      <div class="no-client" id="noClient">
+        <div style="font-size:36px;opacity:0.2;">◎</div>
+        <div style="font-size:13px;">Select or add a client to begin</div>
+      </div>
+      <div id="clientView" style="display:none;flex-direction:column;height:100%;">
+        <div class="toolbar">
+          <div class="client-hdr" id="clientHdr"></div>
+          <div class="toolbar-right">
+            <button class="btn danger sm" onclick="deleteClient()">Remove</button>
+            <button class="btn pri" onclick="saveClient()">Save changes</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('overview')">Overview</div>
+          <div class="tab" onclick="switchTab('portfolio')">Portfolio</div>
+          <div class="tab" onclick="switchTab('projections')">Projections</div>
+          <div class="tab" onclick="switchTab('health')">Health Score</div>
+          <div class="tab" onclick="switchTab('scenarios')">Scenarios</div>
+          <div class="tab" onclick="switchTab('goals')">Goals</div>
+          <div class="tab" onclick="switchTab('notes')">Client Notes</div>
+        </div>
+        <div class="tab-content" id="tabContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modalOverlay" style="display:none;">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── STATE ────────────────────────────────────────────────────────────────────
+let clients={}, activeId=null, activeTab='overview';
+let chartInst=null, sandboxChartInst=null, targetsChartInst=null, allocChartInst=null, projChartInst=null;
+
+const DEFAULTS={
+  name:'',age:45,retireAge:65,riskProfile:'moderate',
+  income:150000,spouseIncome:0,monthlyExpenses:7000,
+  taxRate:28,inflationRate:2.5,
+  portfolio:500000,portfolioReturn:7,
+  rothIRA:50000,traditionalIRA:80000,hsa:15000,
+  monthlyPortfolioContrib:2000,monthlyRoth:500,monthlyIRA:500,
+  home:600000,mortgage:350000,otherDebt:20000,
+  annualSocialSecurity:36000,pension:0,
+  college529:45000,monthly529:500,childrenAges:'8,11',
+  goals:[],holdings:[],scenarios:[]
+};
+
+// ── PERSIST ──────────────────────────────────────────────────────────────────
+function load(){try{const r=localStorage.getItem('fp_clients_v2');if(r)clients=JSON.parse(r);}catch(e){}renderSidebar();}
+function save(){try{localStorage.setItem('fp_clients_v2',JSON.stringify(clients));}catch(e){}}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(n){if(Math.abs(n)>=1e6)return'$'+(n/1e6).toFixed(1)+'M';if(Math.abs(n)>=1000)return'$'+(n/1000).toFixed(0)+'K';return'$'+Math.round(n);}
+function fmtF(n){return'$'+Math.round(n).toLocaleString();}
+function f(k,c){return c[k]!==undefined?c[k]:DEFAULTS[k];}
+function nw(c){return(+c.portfolio||0)+(+c.rothIRA||0)+(+c.traditionalIRA||0)+(+c.hsa||0)+(+c.home||0)+(+c.college529||0)-(+c.mortgage||0)-(+c.otherDebt||0);}
+function totalAssets(c){return(+c.portfolio||0)+(+c.rothIRA||0)+(+c.traditionalIRA||0)+(+c.hsa||0)+(+c.home||0)+(+c.college529||0);}
+function totalDebt(c){return(+c.mortgage||0)+(+c.otherDebt||0);}
+function monthlySurplus(c){return((+c.income||0)+(+c.spouseIncome||0))/12-(+c.monthlyExpenses||0);}
+function totalMonthlyContrib(c){return(+c.monthlyPortfolioContrib||0)+(+c.monthlyRoth||0)+(+c.monthlyIRA||0)+(+c.monthly529||0);}
+
+function projectAssets(c,years,overrides={}){
+  let p=+c.portfolio||0,ro=+c.rothIRA||0,ir=+c.traditionalIRA||0,hs=+c.hsa||0;
+  const r=(+(overrides.portfolioReturn||c.portfolioReturn)||7)/100;
+  const mP=+(overrides.monthlyPortfolioContrib!==undefined?overrides.monthlyPortfolioContrib:c.monthlyPortfolioContrib)||0;
+  const mR=+(overrides.monthlyRoth!==undefined?overrides.monthlyRoth:c.monthlyRoth)||0;
+  const mI=+(overrides.monthlyIRA!==undefined?overrides.monthlyIRA:c.monthlyIRA)||0;
+  const data=[];
+  for(let y=0;y<=years;y++){
+    data.push(Math.round(p+ro+ir+hs));
+    p=p*(1+r)+mP*12;ro=ro*(1+r)+mR*12;ir=ir*(1+r)+mI*12;hs=hs*1.05;
+  }
+  return data;
+}
+
+function retireMetrics(c,overrides={}){
+  const age=+c.age||45,retAge=+(overrides.retireAge||c.retireAge)||65;
+  const ytr=Math.max(1,retAge-age);
+  const infl=(+c.inflationRate||2.5)/100;
+  const proj=projectAssets(c,ytr,overrides);
+  const portfolio=proj[proj.length-1];
+  const monthExp=(+c.monthlyExpenses||7000)*Math.pow(1+infl,ytr);
+  const ssAnn=+c.annualSocialSecurity||0, penAnn=+c.pension||0;
+  const needed=Math.max(0,(monthExp*12-ssAnn-penAnn)/0.04);
+  const pct=Math.min(200,Math.round(portfolio/Math.max(1,needed)*100));
+  const monthIncome=portfolio*0.04/12+ssAnn/12+penAnn/12;
+  const surplus=monthIncome-monthExp;
+  return{ytr,portfolio,needed,pct,monthIncome,monthExp,surplus,ssAnn,penAnn};
+}
+
+// ── SIDEBAR ──────────────────────────────────────────────────────────────────
+function renderSidebar(){
+  const el=document.getElementById('clientList');
+  const ids=Object.keys(clients);
+  if(!ids.length){el.innerHTML='<div style="font-size:12px;color:var(--tx2);padding:10px 8px;">No clients yet</div>';return;}
+  el.innerHTML=ids.map(id=>{
+    const c=clients[id];
+    return `<div class="client-item${id===activeId?' active':''}" onclick="selectClient('${id}')">
+      <div class="client-name">${escH(c.name||'Unnamed')}</div>
+      <div class="client-sub">Age ${c.age} · ${fmt(nw(c))} NW</div>
+    </div>`;
+  }).join('');
+}
+
+function selectClient(id){
+  activeId=id;activeTab='overview';
+  document.getElementById('noClient').style.display='none';
+  const v=document.getElementById('clientView');v.style.display='flex';
+  document.getElementById('clientHdr').textContent=clients[id].name||'Client';
+  renderSidebar();renderTab();
+}
+
+function switchTab(t){
+  activeTab=t;
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['overview','portfolio','projections','health','scenarios','goals','notes'][i]===t));
+  renderTab();
+}
+
+function renderTab(){
+  if(!activeId)return;
+  const c=clients[activeId];
+  const el=document.getElementById('tabContent');
+  [chartInst,sandboxChartInst,targetsChartInst,allocChartInst,projChartInst].forEach(ch=>{if(ch){ch.destroy();}});
+  chartInst=sandboxChartInst=targetsChartInst=allocChartInst=projChartInst=null;
+  if(activeTab==='overview'){el.innerHTML=overviewHTML(c);renderOverviewCharts(c);}
+  else if(activeTab==='portfolio'){el.innerHTML=portfolioHTML(c);}
+  else if(activeTab==='projections'){el.innerHTML=projectionsHTML(c);renderProjectionsCharts(c);}
+  else if(activeTab==='health'){el.innerHTML=healthHTML(c);renderHealthCharts(c);}
+  else if(activeTab==='scenarios'){el.innerHTML=scenariosHTML(c);sbUpdate();}
+  else if(activeTab==='goals')el.innerHTML=goalsHTML(c);
+  else if(activeTab==='notes')el.innerHTML=notesHTML(c);
+}
+
+function upd(k,v){if(!activeId)return;clients[activeId][k]=v;if(k==='name')document.getElementById('clientHdr').textContent=v||'Client';}
+function saveClient(){save();renderSidebar();const btn=event.target;btn.textContent='Saved!';setTimeout(()=>btn.textContent='Save changes',1500);}
+
+// ── COLLAPSIBLE HELPER ────────────────────────────────────────────────────────
+function coll(id,title,content,open=false){
+  return `<div class="collapsible">
+    <div class="coll-hdr" onclick="toggleColl('${id}')">
+      <span class="coll-title">${title}</span>
+      <span class="coll-arrow${open?' open':''}" id="arr-${id}">▼</span>
+    </div>
+    <div class="coll-body" id="coll-${id}" style="${open?'':'display:none;'}">${content}</div>
+  </div>`;
+}
+function toggleColl(id){
+  const body=document.getElementById('coll-'+id);
+  const arr=document.getElementById('arr-'+id);
+  const vis=body.style.display!=='none';
+  body.style.display=vis?'none':'block';
+  arr.classList.toggle('open',!vis);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB 1: OVERVIEW
+// ════════════════════════════════════════════════════════════════════════════
+function overviewHTML(c){
+  const rm=retireMetrics(c);
+  const surplus=monthlySurplus(c);
+  const contrib=totalMonthlyContrib(c);
+  const savingsRate=Math.round(contrib/Math.max(1,(+c.income||0)+(+c.spouseIncome||0))*12*100);
+
+  const scoreData=computeScore(c);
+  const scoreColor=scoreData.score>=75?'var(--green)':scoreData.score>=50?'var(--amber)':'var(--red)';
+  const scoreLabel=scoreData.score>=75?'Strong':scoreData.score>=50?'Developing':'Needs attention';
+
+  const ta=totalAssets(c),td=totalDebt(c);
+  const portPct=ta>0?Math.round((+c.portfolio||0)/ta*100):0;
+  const rothPct=ta>0?Math.round((+c.rothIRA||0)/ta*100):0;
+  const iraPct=ta>0?Math.round((+c.traditionalIRA||0)/ta*100):0;
+  const homePct=ta>0?Math.round((+c.home||0)/ta*100):0;
+  const otherPct=Math.max(0,100-portPct-rothPct-iraPct-homePct);
+
+  return `
+  <div class="ov-top">
+    <div class="ov-score-ring">
+      <div class="ov-score-num" style="color:${scoreColor}">${scoreData.score}</div>
+      <div class="ov-score-lbl">Financial health · ${scoreLabel}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-top:12px;">
+        ${scoreData.components.map(comp=>`<div style="background:var(--bg1);border-radius:var(--r-md);padding:8px;border:0.5px solid var(--bd3);">
+          <div style="font-size:10px;color:var(--tx2);">${comp.label}</div>
+          <div style="font-size:14px;font-weight:500;color:${comp.score>=75?'var(--green)':comp.score>=50?'var(--amber)':'var(--red)'};">${comp.score}<span style="font-size:10px;color:var(--tx2);">/100</span></div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="ov-cf">
+      <div style="font-size:11px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Monthly cash flow</div>
+      <div class="cf-row"><span class="cf-lbl">Combined income</span><span class="cf-val">${fmtF(((+c.income||0)+(+c.spouseIncome||0))/12)}/mo</span></div>
+      <div class="cf-row"><span class="cf-lbl">Living expenses</span><span class="cf-val" style="color:var(--red);">−${fmtF(+c.monthlyExpenses||0)}/mo</span></div>
+      <div class="cf-row"><span class="cf-lbl">Investable surplus</span><span class="cf-val" style="color:${surplus>=0?'var(--green)':'var(--red)'};">${surplus>=0?'+':''}${fmtF(surplus)}/mo</span></div>
+      <div class="cf-row"><span class="cf-lbl">Total contributions</span><span class="cf-val">−${fmtF(contrib)}/mo</span></div>
+      <div class="cf-row" style="margin-top:4px;padding-top:8px;border-top:0.5px solid var(--bd3);"><span class="cf-lbl">Savings rate</span><span class="cf-val" style="color:${savingsRate>=20?'var(--green)':savingsRate>=10?'var(--amber)':'var(--red)'};">${savingsRate}%</span></div>
+    </div>
+  </div>
+
+  <div class="g4">
+    <div class="mc"><div class="ml">Net worth</div><div class="mv">${fmt(nw(c))}</div></div>
+    <div class="mc"><div class="ml">Total assets</div><div class="mv g">${fmt(ta)}</div></div>
+    <div class="mc"><div class="ml">Total debt</div><div class="mv r">${fmt(td)}</div></div>
+    <div class="mc"><div class="ml">Years to retire</div><div class="mv">${rm.ytr}</div></div>
+  </div>
+
+  <div style="margin-bottom:14px;">
+    <div class="sec">Asset allocation</div>
+    <div class="alloc-bar">
+      <div class="alloc-seg" style="flex:${portPct};background:var(--green);"></div>
+      <div class="alloc-seg" style="flex:${rothPct};background:var(--blue);"></div>
+      <div class="alloc-seg" style="flex:${iraPct};background:var(--purple);"></div>
+      <div class="alloc-seg" style="flex:${homePct};background:var(--amber);"></div>
+      <div class="alloc-seg" style="flex:${otherPct};background:var(--bd2);"></div>
+    </div>
+    <div class="alloc-legend">
+      <div class="alloc-item"><div class="alloc-dot" style="background:var(--green);"></div>Brokerage/401k ${portPct}%</div>
+      <div class="alloc-item"><div class="alloc-dot" style="background:var(--blue);"></div>Roth IRA ${rothPct}%</div>
+      <div class="alloc-item"><div class="alloc-dot" style="background:var(--purple);"></div>Trad IRA ${iraPct}%</div>
+      <div class="alloc-item"><div class="alloc-dot" style="background:var(--amber);"></div>Real estate ${homePct}%</div>
+      <div class="alloc-item"><div class="alloc-dot" style="background:var(--bd2);"></div>Other ${otherPct}%</div>
+    </div>
+  </div>
+
+  <div class="sec">Client data — click to expand & edit</div>
+  ${coll('personal','Personal & Planning',personalFields(c),false)}
+  ${coll('income','Income & Expenses',incomeFields(c),false)}
+  ${coll('investments','Investment Accounts',investmentFields(c),false)}
+  ${coll('realestate','Real Estate & Liabilities',realEstateFields(c),false)}
+  ${coll('retirement-inc','Retirement Income',retirementIncFields(c),false)}
+  ${coll('education','Education (529)',educationFields(c),false)}
+  `;
+}
+
+function renderOverviewCharts(c){}
+
+function personalFields(c){return `<div class="g2">
+  <div class="fg"><div class="fl">Full name</div><input class="fi" value="${escH(f('name',c))}" oninput="upd('name',this.value)"></div>
+  <div class="fg"><div class="fl">Risk profile</div><select class="fi" onchange="upd('riskProfile',this.value)"><option${c.riskProfile==='conservative'?' selected':''}>conservative</option><option${(!c.riskProfile||c.riskProfile==='moderate')?' selected':''}>moderate</option><option${c.riskProfile==='aggressive'?' selected':''}>aggressive</option></select></div>
+</div><div class="g3">
+  <div class="fg"><div class="fl">Age</div><input class="fi" type="number" value="${f('age',c)}" oninput="upd('age',+this.value)"></div>
+  <div class="fg"><div class="fl">Target retire age</div><input class="fi" type="number" value="${f('retireAge',c)}" oninput="upd('retireAge',+this.value)"></div>
+  <div class="fg"><div class="fl">Tax bracket %</div><input class="fi" type="number" value="${f('taxRate',c)}" oninput="upd('taxRate',+this.value)"></div>
+</div>`;}
+
+function incomeFields(c){return `<div class="g2">
+  <div class="fg"><div class="fl">Annual income</div><input class="fi" type="number" value="${f('income',c)}" oninput="upd('income',+this.value)"></div>
+  <div class="fg"><div class="fl">Spouse/partner income</div><input class="fi" type="number" value="${f('spouseIncome',c)}" oninput="upd('spouseIncome',+this.value)"></div>
+  <div class="fg"><div class="fl">Monthly living expenses</div><input class="fi" type="number" value="${f('monthlyExpenses',c)}" oninput="upd('monthlyExpenses',+this.value)"></div>
+  <div class="fg"><div class="fl">Inflation rate %</div><input class="fi" type="number" value="${f('inflationRate',c)}" step="0.1" oninput="upd('inflationRate',+this.value)"></div>
+</div>`;}
+
+function investmentFields(c){return `<div class="g2">
+  <div class="fg"><div class="fl">Brokerage / 401k balance</div><input class="fi" type="number" value="${f('portfolio',c)}" oninput="upd('portfolio',+this.value)"></div>
+  <div class="fg"><div class="fl">Monthly 401k/brokerage contrib</div><input class="fi" type="number" value="${f('monthlyPortfolioContrib',c)}" oninput="upd('monthlyPortfolioContrib',+this.value)"></div>
+  <div class="fg"><div class="fl">Roth IRA balance</div><input class="fi" type="number" value="${f('rothIRA',c)}" oninput="upd('rothIRA',+this.value)"></div>
+  <div class="fg"><div class="fl">Monthly Roth contribution</div><input class="fi" type="number" value="${f('monthlyRoth',c)}" oninput="upd('monthlyRoth',+this.value)"></div>
+  <div class="fg"><div class="fl">Traditional IRA balance</div><input class="fi" type="number" value="${f('traditionalIRA',c)}" oninput="upd('traditionalIRA',+this.value)"></div>
+  <div class="fg"><div class="fl">Monthly IRA contribution</div><input class="fi" type="number" value="${f('monthlyIRA',c)}" oninput="upd('monthlyIRA',+this.value)"></div>
+  <div class="fg"><div class="fl">HSA balance</div><input class="fi" type="number" value="${f('hsa',c)}" oninput="upd('hsa',+this.value)"></div>
+  <div class="fg"><div class="fl">Expected annual return %</div><input class="fi" type="number" value="${f('portfolioReturn',c)}" step="0.1" oninput="upd('portfolioReturn',+this.value)"></div>
+</div>`;}
+
+function realEstateFields(c){return `<div class="g3">
+  <div class="fg"><div class="fl">Home value</div><input class="fi" type="number" value="${f('home',c)}" oninput="upd('home',+this.value)"></div>
+  <div class="fg"><div class="fl">Mortgage balance</div><input class="fi" type="number" value="${f('mortgage',c)}" oninput="upd('mortgage',+this.value)"></div>
+  <div class="fg"><div class="fl">Other debt</div><input class="fi" type="number" value="${f('otherDebt',c)}" oninput="upd('otherDebt',+this.value)"></div>
+</div>`;}
+
+function retirementIncFields(c){return `<div class="g2">
+  <div class="fg"><div class="fl">Annual Social Security est.</div><input class="fi" type="number" value="${f('annualSocialSecurity',c)}" oninput="upd('annualSocialSecurity',+this.value)"></div>
+  <div class="fg"><div class="fl">Annual pension</div><input class="fi" type="number" value="${f('pension',c)}" oninput="upd('pension',+this.value)"></div>
+</div>`;}
+
+function educationFields(c){return `<div class="g3">
+  <div class="fg"><div class="fl">529 balance</div><input class="fi" type="number" value="${f('college529',c)}" oninput="upd('college529',+this.value)"></div>
+  <div class="fg"><div class="fl">Monthly 529 contribution</div><input class="fi" type="number" value="${f('monthly529',c)}" oninput="upd('monthly529',+this.value)"></div>
+  <div class="fg"><div class="fl">Child ages (comma separated)</div><input class="fi" value="${f('childrenAges',c)}" oninput="upd('childrenAges',this.value)"></div>
+</div>`;}
+
+// ── SCORE ENGINE ──────────────────────────────────────────────────────────────
+function computeScore(c){
+  const rm=retireMetrics(c);
+  const retireScore=Math.min(100,rm.pct);
+
+  const sr=Math.round(totalMonthlyContrib(c)/Math.max(1,((+c.income||0)+(+c.spouseIncome||0))/12)*100);
+  const cashScore=Math.min(100,Math.max(0,sr>=20?100:sr>=15?80:sr>=10?60:sr>=5?40:20));
+
+  const tdRatio=totalDebt(c)/Math.max(1,totalAssets(c));
+  const debtScore=Math.min(100,Math.max(0,tdRatio<=0.2?100:tdRatio<=0.4?75:tdRatio<=0.6?50:25));
+
+  const ages=(c.childrenAges||'').split(',').map(a=>+a.trim()).filter(a=>a>0&&a<18);
+  let col529Score=100;
+  if(ages.length){
+    const yl=Math.max(0,18-ages[0]);
+    let bal=+c.college529||0;
+    for(let y=0;y<yl;y++)bal=bal*1.06+(+c.monthly529||0)*12;
+    const need=yl*12*280*Math.pow(1.05,yl/2);
+    col529Score=Math.min(100,Math.round(bal/Math.max(1,need)*100));
+  }
+
+  const components=[
+    {label:'Retirement',score:retireScore},
+    {label:'Savings rate',score:cashScore},
+    {label:'Debt ratio',score:debtScore},
+    {label:'529 adequacy',score:col529Score},
+  ];
+  const score=Math.round(components.reduce((s,c)=>s+c.score,0)/components.length);
+  return{score,components};
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB 2: PORTFOLIO
+// ════════════════════════════════════════════════════════════════════════════
+function portfolioHTML(c){
+  const holdings=c.holdings||[];
+  const totalMV=holdings.reduce((s,h)=>s+(+h.price||0)*(+h.shares||0),0);
+  const totalCost=holdings.reduce((s,h)=>s+(+h.cost||0)*(+h.shares||0),0);
+  const totalGain=totalMV-totalCost;
+  const gainPct=totalCost>0?(totalGain/totalCost*100):0;
+
+  // Account breakdown
+  const byAcct={brokerage:0,roth:0,ira:0,'401k':0,other:0};
+  holdings.forEach(h=>{const mv=(+h.price||0)*(+h.shares||0);byAcct[h.account||'other']=(byAcct[h.account||'other']||0)+mv;});
+  const acctColors={brokerage:'var(--green)',roth:'var(--blue)',ira:'var(--purple)','401k':'var(--amber)',other:'var(--bd2)'};
+  const acctSegs=Object.entries(byAcct).filter(([,v])=>v>0).map(([k,v])=>{
+    const pct=totalMV>0?v/totalMV*100:0;
+    return `<div class="alloc-seg" style="flex:${pct};background:${acctColors[k]};"></div>`;
+  }).join('');
+  const acctLegend=Object.entries(byAcct).filter(([,v])=>v>0).map(([k,v])=>{
+    const pct=totalMV>0?Math.round(v/totalMV*100):0;
+    return `<div class="alloc-item"><div class="alloc-dot" style="background:${acctColors[k]};"></div>${k} ${pct}% (${fmt(v)})</div>`;
+  }).join('');
+
+  const rows=holdings.map((h,i)=>{
+    const mv=(+h.price||0)*(+h.shares||0);
+    const cost=(+h.cost||0)*(+h.shares||0);
+    const gain=mv-cost;
+    const gainP=cost>0?(gain/cost*100):0;
+    const pctPort=totalMV>0?(mv/totalMV*100):0;
+    const priceCell=h.fetchedPrice?`<span>$${(+h.price).toFixed(2)}</span> <span style="font-size:10px;color:var(--tx3);">live</span>`:`$${(+h.price||0).toFixed(2)}`;
+    return `<tr>
+      <td><span class="ticker">${escH(h.ticker||'')}</span></td>
+      <td><input class="hi" style="width:90px;" value="${escH(h.name||'')}" placeholder="Name" oninput="updH(${i},'name',this.value)"></td>
+      <td class="r"><input class="hi" style="width:70px;text-align:right;" type="number" value="${h.shares||''}" placeholder="0" oninput="updH(${i},'shares',+this.value)"></td>
+      <td class="r"><input class="hi" style="width:75px;text-align:right;" type="number" value="${h.cost||''}" step="0.01" oninput="updH(${i},'cost',+this.value)"></td>
+      <td class="r" id="pc-${i}">${priceCell}</td>
+      <td class="r">${fmtF(Math.round(mv))}</td>
+      <td class="r ${gain>=0?'gp':'gn'}">${gain>=0?'+':''}${fmtF(Math.round(gain))} <span style="font-size:10px;">(${gainP>=0?'+':''}${gainP.toFixed(1)}%)</span></td>
+      <td class="r">${pctPort.toFixed(1)}%</td>
+      <td><select class="hi" style="width:85px;" onchange="updH(${i},'account',this.value)">
+        <option${h.account==='brokerage'?' selected':''}>brokerage</option>
+        <option${h.account==='roth'?' selected':''}>roth</option>
+        <option${h.account==='ira'?' selected':''}>ira</option>
+        <option${h.account==='401k'?' selected':''}>401k</option>
+        <option${h.account==='other'?' selected':''}>other</option>
+      </select></td>
+      <td><button class="btn danger sm" onclick="rmH(${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div class="g4">
+    <div class="mc"><div class="ml">Market value</div><div class="mv">${fmt(totalMV)}</div></div>
+    <div class="mc"><div class="ml">Total cost basis</div><div class="mv">${fmt(totalCost)}</div></div>
+    <div class="mc"><div class="ml">Unrealized gain/loss</div><div class="mv ${totalGain>=0?'g':'r'}">${totalGain>=0?'+':''}${fmt(totalGain)}</div></div>
+    <div class="mc"><div class="ml">Total return</div><div class="mv ${gainPct>=0?'g':'r'}">${gainPct>=0?'+':''}${gainPct.toFixed(1)}%</div></div>
+  </div>
+
+  ${holdings.length?`<div style="margin-bottom:14px;">
+    <div class="sec">Account allocation</div>
+    <div class="alloc-bar">${acctSegs||'<div style="flex:1;background:var(--bd3);"></div>'}</div>
+    <div class="alloc-legend">${acctLegend||'<span style="font-size:11px;color:var(--tx2);">No positions yet</span>'}</div>
+  </div>`:''}
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <div class="sec" style="margin:0;">Positions</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn sm" onclick="fetchAll()" id="fetchBtn">↻ Refresh prices</button>
+      <button class="btn sm" onclick="toggleAddHld()">+ Add position</button>
+    </div>
+  </div>
+
+  <div id="addHldForm" style="display:none;">
+    <div class="add-hld-row">
+      <input class="hi" id="nh_t" placeholder="Ticker" style="text-transform:uppercase;">
+      <input class="hi" id="nh_n" placeholder="Name (optional)">
+      <input class="hi" id="nh_s" type="number" placeholder="Shares">
+      <input class="hi" id="nh_c" type="number" placeholder="Cost/share" step="0.01">
+      <select class="hi" id="nh_a"><option>brokerage</option><option>roth</option><option>ira</option><option>401k</option><option>other</option></select>
+      <button class="btn pri sm" onclick="addHld()">Add</button>
+    </div>
+  </div>
+
+  ${!holdings.length?`<div class="no-data">No positions yet. Click "+ Add position" to start tracking.</div>`:`
+  <div style="overflow-x:auto;">
+  <table class="hld-table">
+    <thead><tr><th>Ticker</th><th>Name</th><th class="r">Shares</th><th class="r">Cost/sh</th><th class="r">Price</th><th class="r">Mkt value</th><th class="r">Gain/loss</th><th class="r">% port</th><th>Account</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr style="background:var(--bg2);">
+      <td colspan="5" style="padding:7px 8px;font-size:12px;font-weight:500;">Total</td>
+      <td class="r" style="padding:7px 8px;font-weight:500;">${fmtF(Math.round(totalMV))}</td>
+      <td class="r ${totalGain>=0?'gp':'gn'}" style="padding:7px 8px;font-weight:500;">${totalGain>=0?'+':''}${fmtF(Math.round(totalGain))}</td>
+      <td colspan="3"></td>
+    </tr></tfoot>
+  </table></div>`}
+  <div style="font-size:11px;color:var(--tx3);margin-top:8px;">Prices via Yahoo Finance · For reference only · Verify with your brokerage</div>`;
+}
+
+function toggleAddHld(){const f=document.getElementById('addHldForm');f.style.display=f.style.display==='none'?'block':'none';if(f.style.display==='block')document.getElementById('nh_t').focus();}
+function addHld(){
+  const c=clients[activeId];if(!c)return;
+  if(!c.holdings)c.holdings=[];
+  const ticker=document.getElementById('nh_t').value.trim().toUpperCase();if(!ticker)return;
+  c.holdings.push({ticker,name:document.getElementById('nh_n').value,shares:+document.getElementById('nh_s').value,cost:+document.getElementById('nh_c').value,price:0,account:document.getElementById('nh_a').value,fetchedPrice:false});
+  renderTab();fetchPriceAt(c.holdings.length-1);
+}
+function rmH(i){const c=clients[activeId];if(!c||!c.holdings)return;c.holdings.splice(i,1);renderTab();}
+function updH(i,k,v){const c=clients[activeId];if(!c||!c.holdings)return;c.holdings[i][k]=v;}
+async function fetchPriceAt(i){
+  const c=clients[activeId];if(!c||!c.holdings||!c.holdings[i])return;
+  const h=c.holdings[i];
+  const cell=document.getElementById(`pc-${i}`);
+  if(cell)cell.innerHTML=`<span style="font-size:11px;color:var(--tx3);">fetching…</span>`;
+  try{
+    const r=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(h.ticker)}?interval=1d&range=1d`);
+    const d=await r.json();
+    const price=d?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    if(price){h.price=price;h.fetchedPrice=true;if(cell)cell.innerHTML=`<span>$${price.toFixed(2)}</span> <span style="font-size:10px;color:var(--tx3);">live</span>`;}
+    else if(cell)cell.innerHTML='—';
+  }catch(e){if(cell)cell.innerHTML='—';}
+}
+async function fetchAll(){
+  const c=clients[activeId];if(!c||!c.holdings?.length)return;
+  const btn=document.getElementById('fetchBtn');
+  if(btn){btn.textContent='Fetching…';btn.disabled=true;}
+  await Promise.all(c.holdings.map((_,i)=>fetchPriceAt(i)));
+  if(btn){btn.textContent='↻ Refresh prices';btn.disabled=false;}
+  renderTab();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB 3: PROJECTIONS
+// ════════════════════════════════════════════════════════════════════════════
+function projectionsHTML(c){
+  const rm=retireMetrics(c);
+  const wdRate=(+(c.withdrawalRate)||4)/100;
+  const wdMonthly=rm.portfolio*wdRate/12;
+  const breakEvenYears=rm.portfolio/(rm.monthExp*12-rm.ssAnn-rm.penAnn);
+
+  const portIncomePct=rm.monthIncome>0?Math.round(wdMonthly/rm.monthIncome*100):0;
+  const ssPct=rm.monthIncome>0?Math.round(rm.ssAnn/12/rm.monthIncome*100):0;
+  const penPct=rm.monthIncome>0?Math.round(rm.penAnn/12/rm.monthIncome*100):0;
+  const totalIncomePct=portIncomePct+ssPct+penPct;
+
+  return `
+  <div class="g4">
+    <div class="mc"><div class="ml">Portfolio at retire (age ${+c.retireAge||65})</div><div class="mv">${fmt(rm.portfolio)}</div></div>
+    <div class="mc"><div class="ml">Monthly income in retirement</div><div class="mv g">${fmt(rm.monthIncome)}</div></div>
+    <div class="mc"><div class="ml">Monthly needs (inflation adj.)</div><div class="mv a">${fmt(rm.monthExp)}</div></div>
+    <div class="mc"><div class="ml">Monthly surplus / shortfall</div><div class="mv ${rm.surplus>=0?'g':'r'}">${rm.surplus>=0?'+':''}${fmt(rm.surplus)}</div></div>
+  </div>
+
+  <div class="sec">Portfolio growth to retirement</div>
+  <div class="chart-wrap"><canvas id="projChart" role="img" aria-label="Portfolio growth chart">Portfolio projected at ${fmtF(rm.portfolio)}.</canvas></div>
+
+  <div class="sec">Retirement income breakdown</div>
+  <div style="margin-bottom:10px;">
+    <div class="waterfall-row">
+      <div class="wf-label">Portfolio (${wdRate*100}% SWR)</div>
+      <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:${portIncomePct}%;background:var(--green);"></div></div>
+      <div class="wf-val" style="color:var(--green);">${fmt(wdMonthly)}/mo</div>
+    </div>
+    <div class="waterfall-row">
+      <div class="wf-label">Social Security</div>
+      <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:${ssPct}%;background:var(--blue);"></div></div>
+      <div class="wf-val" style="color:var(--blue);">${fmt(rm.ssAnn/12)}/mo</div>
+    </div>
+    ${rm.penAnn>0?`<div class="waterfall-row">
+      <div class="wf-label">Pension</div>
+      <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:${penPct}%;background:var(--purple);"></div></div>
+      <div class="wf-val" style="color:var(--purple);">${fmt(rm.penAnn/12)}/mo</div>
+    </div>`:''}
+    <div class="waterfall-row" style="margin-top:4px;padding-top:8px;border-top:0.5px solid var(--bd3);">
+      <div class="wf-label" style="font-weight:500;">Total income</div>
+      <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:${Math.min(100,totalIncomePct)}%;background:var(--tx1);"></div></div>
+      <div class="wf-val" style="font-weight:500;">${fmt(rm.monthIncome)}/mo</div>
+    </div>
+    <div class="waterfall-row">
+      <div class="wf-label" style="color:var(--tx-danger);">Needs (inflated)</div>
+      <div class="wf-bar-bg"><div class="wf-bar-fill" style="width:100%;background:var(--red);opacity:0.3;"></div></div>
+      <div class="wf-val" style="color:var(--red);">${fmt(rm.monthExp)}/mo</div>
+    </div>
+  </div>
+
+  <div class="sec">Withdrawal rate sensitivity</div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+    <div class="wf-label">Withdrawal rate</div>
+    <input type="range" min="2" max="6" step="0.25" value="${+c.withdrawalRate||4}" style="flex:1;accent-color:var(--green);" oninput="upd('withdrawalRate',+this.value);renderTab();">
+    <div style="font-size:13px;font-weight:500;min-width:40px;">${+c.withdrawalRate||4}%</div>
+  </div>
+
+  <div class="sec">Key retirement metrics</div>
+  <div class="g3" style="margin-bottom:6px;">
+    <div class="mc"><div class="ml">% funded (4% SWR)</div><div class="mv ${rm.pct>=100?'g':rm.pct>=75?'a':'r'}">${rm.pct}%</div></div>
+    <div class="mc"><div class="ml">Portfolio needed</div><div class="mv">${fmt(rm.needed)}</div></div>
+    <div class="mc"><div class="ml">Gap to target</div><div class="mv ${rm.portfolio>=rm.needed?'g':'r'}">${rm.portfolio>=rm.needed?'Funded':fmt(rm.needed-rm.portfolio)+' short'}</div></div>
+  </div>
+  <div style="font-size:11px;color:var(--tx2);">At ${+c.retireAge||65}, your client's ${wdRate*100}% SWR yields ${fmt(wdMonthly)}/mo from portfolio + ${fmt(rm.ssAnn/12)}/mo SS + ${fmt(rm.penAnn/12)}/mo pension = ${fmt(rm.monthIncome)}/mo total vs ${fmt(rm.monthExp)}/mo inflation-adjusted needs.</div>`;
+}
+
+function renderProjectionsCharts(c){
+  const canvas=document.getElementById('projChart');if(!canvas)return;
+  const rm=retireMetrics(c);
+  const labels=Array.from({length:rm.ytr+1},(_,i)=>(+c.age||45)+i);
+  const data=projectAssets(c,rm.ytr);
+  projChartInst=new Chart(canvas,{type:'line',data:{labels,datasets:[{label:'Investable assets',data,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',fill:true,tension:0.4,pointRadius:0,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11}}},y:{grid:{color:'rgba(128,128,128,0.08)'},ticks:{font:{size:11},callback:v=>fmt(v)}}}}});
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB 4: HEALTH SCORE
+// ════════════════════════════════════════════════════════════════════════════
+function mkMsTrack(cps){
+  return cps.map((cp,ci)=>{
+    const done=cp.actual>=cp.target;
+    const isCur=!done&&ci>0&&cps[ci-1].actual>=cps[ci-1].target;
+    const color=done?'var(--green)':isCur?'var(--amber)':'var(--tx2)';
+    return `<div class="ms-dot-wrap">
+      <div class="ms-top">${cp.label}</div>
+      <div class="ms-dot${done?' done':isCur?' cur':''}"></div>
+      <div class="ms-bot" style="color:${color};">${fmtF(Math.round(cp.actual))}</div>
+    </div>${ci<cps.length-1?`<div class="ms-line${done?' done':''}"></div>`:''}`;
+  }).join('');
+}
+
+function healthHTML(c){
+  const sd=computeScore(c);
+  const rm=retireMetrics(c);
+  const scoreColor=sd.score>=75?'var(--green)':sd.score>=50?'var(--amber)':'var(--red)';
+  const scoreLabel=sd.score>=75?'Strong':sd.score>=50?'Developing':'Needs attention';
+
+  // Score explanation
+  const scoreBreakdown=sd.components.map(comp=>{
+    const col=comp.score>=75?'var(--green)':comp.score>=50?'var(--amber)':'var(--red)';
+    const tips={
+      'Retirement':comp.score>=75?'Well funded':'Increase contributions or consider working longer',
+      'Savings rate':comp.score>=75?'Excellent savings discipline':'Target 15–20%+ of gross income',
+      'Debt ratio':comp.score>=75?'Healthy debt load':'Work to reduce liabilities relative to assets',
+      '529 adequacy':comp.score>=75?'On track for college costs':'Consider increasing monthly contributions',
+    };
+    return `<div style="border:0.5px solid var(--bd3);border-radius:var(--r-md);padding:12px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:500;">${comp.label}</span>
+        <span style="font-size:18px;font-weight:500;color:${col};">${comp.score}<span style="font-size:11px;color:var(--tx2);">/100</span></span>
+      </div>
+      <div class="pb-wrap"><div class="pb-fill${comp.score>=75?'':comp.score>=50?' a':' r'}" style="width:${comp.score}%;"></div></div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:4px;">${tips[comp.label]||''}</div>
+    </div>`;
+  }).join('');
+
+  // Retirement milestone
+  const age=+c.age||45,retAge=+c.retireAge||65,ytr=Math.max(1,retAge-age);
+  const retireCps=[0,0.25,0.5,0.75,1].map(f=>{
+    const yr=Math.round(f*ytr);
+    const proj=projectAssets(c,yr);
+    const needed=rm.needed*(yr/ytr);
+    return{label:yr===0?'Now':`Age ${age+yr}`,actual:proj[proj.length-1],target:Math.max(1,needed)};
+  });
+
+  // Net worth milestones
+  const curNW=nw(c);
+  const nwCps=[0,0.25,0.5,0.75,1].map(f=>{
+    const yr=Math.round(f*ytr);
+    const proj=projectAssets(c,yr);
+    const debt=Math.max(0,(+c.mortgage||0)*Math.pow(0.97,yr)+(+c.otherDebt||0)*Math.pow(0.9,yr));
+    const projNW=proj[proj.length-1]-debt;
+    const tgtNW=curNW*Math.pow(1.08,yr);
+    return{label:yr===0?'Now':`Age ${age+yr}`,actual:projNW,target:Math.max(1,tgtNW)};
+  });
+
+  // Debt paydown
+  const td=totalDebt(c);
+  const debtCps=[0,0.25,0.5,0.75,1].map(f=>{
+    const yr=Math.round(f*Math.min(30,ytr));
+    const remaining=(+c.mortgage||0)*Math.pow(0.97,yr)+(+c.otherDebt||0)*Math.pow(0.9,yr);
+    return{label:yr===0?'Now':`Yr ${yr}`,actual:td-remaining,target:td};
+  });
+
+  // 529
+  const childAges=(c.childrenAges||'').split(',').map(a=>+a.trim()).filter(a=>a>0&&a<18);
+  const col529Section=childAges.map((ca,ci)=>{
+    const yl=Math.max(0,18-ca);
+    let bal=+c.college529||0;if(ci>0)bal/=childAges.length;
+    for(let y=0;y<yl;y++)bal=bal*1.06+((+c.monthly529||0)/Math.max(1,childAges.length))*12;
+    const need=Math.max(1,yl*12*280*Math.pow(1.05,yl/2));
+    const p=Math.min(100,Math.round(bal/need*100));
+    const col=p>=80?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+    const cps529=[0,0.33,0.67,1].map(f=>{
+      const yr=Math.round(f*yl);
+      let b=+c.college529||0;if(ci>0)b/=childAges.length;
+      for(let y=0;y<yr;y++)b=b*1.06+((+c.monthly529||0)/Math.max(1,childAges.length))*12;
+      return{label:yr===0?'Now':`Age ${ca+yr}`,actual:b,target:Math.max(1,need*(yr/Math.max(1,yl)))};
+    });
+    return `<div style="margin-bottom:12px;padding:12px;border:0.5px solid var(--bd3);border-radius:var(--r-md);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:500;">Child ${ci+1} (age ${ca}) · ${yl} yrs to college</span>
+        <span class="badge ${p>=80?'g':p>=50?'a':'r'}">${p>=80?'On track':p>=50?'Watch':'At risk'}</span>
+      </div>
+      <div class="pb-wrap"><div class="pb-fill${p>=80?'':p>=50?' a':' r'}" style="width:${p}%;"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);margin-bottom:6px;"><span>Projected: ${fmtF(Math.round(bal))}</span><span>Est. needed: ${fmtF(Math.round(need))}</span></div>
+      <div class="timeline-wrap" style="padding:28px 0;"><div class="ms-track">${mkMsTrack(cps529)}</div></div>
+    </div>`;
+  }).join('');
+
+  // Goals summary
+  const goals=c.goals||[];
+  const goalSection=goals.map((g,i)=>{
+    const needed=+g.amount||0,saved=+g.saved||0,years=+g.years||10,monthly=+g.monthly||0;
+    const proj=Math.min(saved+monthly*years*12,needed*3);
+    const p=Math.min(100,Math.round(saved/Math.max(1,needed)*100));
+    const col=proj>=needed?'var(--green)':p>40?'var(--amber)':'var(--red)';
+    const gCps=Array.from({length:5},(_,si)=>{
+      const yr=Math.round(si/4*years);
+      return{label:yr===0?'Now':`Yr ${yr}`,actual:saved+monthly*yr*12,target:Math.max(1,needed*(yr/Math.max(1,years)))};
+    });
+    return `<div style="margin-bottom:10px;padding:12px;border:0.5px solid var(--bd3);border-radius:var(--r-md);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:500;">${escH(g.name||'Goal')}</span>
+        <span style="font-size:11px;color:var(--tx2);">${escH(g.type||'')} · ${years} yr · ${fmtF(needed)}</span>
+      </div>
+      <div class="pb-wrap"><div class="pb-fill${proj>=needed?'':p>40?' a':' r'}" style="width:${p}%;"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);margin-bottom:4px;"><span>Saved: ${fmtF(saved)}</span><span>Projected: <span style="font-weight:500;color:${col};">${fmtF(Math.round(proj))}</span> · shortfall: ${proj>=needed?'None':fmtF(Math.round(needed-proj))}</span></div>
+      <div class="timeline-wrap" style="padding:28px 0;"><div class="ms-track">${mkMsTrack(gCps)}</div></div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="hs-score-bar">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:80px;">
+      <div class="hs-score-num" style="color:${scoreColor};">${sd.score}</div>
+      <div style="font-size:11px;color:var(--tx2);">/ 100</div>
+      <div style="font-size:12px;font-weight:500;color:${scoreColor};margin-top:4px;">${scoreLabel}</div>
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:8px;">Score = average of 4 components. Each is 0–100 based on how well the plan performs in that area.</div>
+      <div class="hs-components">${sd.components.map(comp=>`<div class="hs-comp">
+        <div class="hs-comp-lbl">${comp.label}</div>
+        <div class="hs-comp-val" style="color:${comp.score>=75?'var(--green)':comp.score>=50?'var(--amber)':'var(--red)'};">${comp.score}/100</div>
+      </div>`).join('')}</div>
+    </div>
+  </div>
+
+  <div class="sec">Score breakdown & action items</div>
+  ${scoreBreakdown}
+
+  <div class="sec">Retirement funding milestone</div>
+  <div style="font-size:11px;color:var(--tx2);margin-bottom:6px;">Green = portfolio on pace for needed ${fmtF(rm.needed)} · amber = falling behind · target includes SS + pension offset</div>
+  <div class="timeline-wrap"><div class="ms-track">${mkMsTrack(retireCps)}</div></div>
+
+  <div class="sec">Net worth trajectory</div>
+  <div style="font-size:11px;color:var(--tx2);margin-bottom:6px;">Projected net worth vs 8% annual growth target</div>
+  <div class="timeline-wrap"><div class="ms-track">${mkMsTrack(nwCps)}</div></div>
+
+  ${td>0?`<div class="sec">Debt paydown</div>
+  <div style="font-size:11px;color:var(--tx2);margin-bottom:6px;">Progress paying off ${fmtF(td)} total debt (mortgage + other)</div>
+  <div class="timeline-wrap"><div class="ms-track">${mkMsTrack(debtCps)}</div></div>
+  <div style="position:relative;width:100%;height:160px;margin-bottom:14px;"><canvas id="debtChart" role="img" aria-label="Debt paydown">Debt paydown chart.</canvas></div>`:''}
+
+  ${childAges.length?`<div class="sec">529 college savings</div>${col529Section}`:''}
+  ${goals.length?`<div class="sec">Specific goals</div>${goalSection}`:
+    `<div style="font-size:12px;color:var(--tx2);padding:12px 0;">No goals set — add them in the Goals tab to track them here.</div>`}`;
+}
+
+function renderHealthCharts(c){
+  const td=totalDebt(c);
+  if(!td)return;
+  const canvas=document.getElementById('debtChart');if(!canvas)return;
+  const ytr=Math.min(30,Math.max(1,(+c.retireAge||65)-(+c.age||45)));
+  const labels=Array.from({length:ytr+1},(_,i)=>i===0?'Now':`Yr ${i}`);
+  targetsChartInst=new Chart(canvas,{type:'line',data:{labels,datasets:[
+    {label:'Mortgage',data:labels.map((_,yr)=>Math.max(0,(+c.mortgage||0)*Math.pow(0.97,yr))),borderColor:'#4f86e8',backgroundColor:'rgba(79,134,232,0.06)',fill:true,tension:0.4,pointRadius:0,borderWidth:2},
+    {label:'Other debt',data:labels.map((_,yr)=>Math.max(0,(+c.otherDebt||0)*Math.pow(0.9,yr))),borderColor:'#a855c8',backgroundColor:'rgba(168,85,200,0.06)',fill:true,tension:0.4,pointRadius:0,borderWidth:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,padding:10}}},scales:{x:{grid:{color:'rgba(128,128,128,0.07)'},ticks:{font:{size:10},maxTicksLimit:8}},y:{grid:{color:'rgba(128,128,128,0.07)'},ticks:{font:{size:10},callback:v=>fmt(v)}}}}});
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB 5: SCENARIOS
+// ════════════════════════════════════════════════════════════════════════════
+function scenariosHTML(c){
+  const saved=c.scenarios||[];
+  const baseRM=retireMetrics(c);
+
+  const savedCards=saved.length?`<div class="sec">Saved scenarios</div>
+  <div class="saved-scenarios">${saved.map((sc,i)=>{
+    const scRM=retireMetrics(c,sc.overrides);
+    const diff=scRM.portfolio-baseRM.portfolio;
+    return `<div class="saved-sc-card" onclick="loadScenario(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="saved-sc-name">${escH(sc.name)}</div>
+        <button class="btn danger sm" onclick="event.stopPropagation();rmScenario(${i})">✕</button>
+      </div>
+      <div class="saved-sc-delta" style="color:${diff>=0?'var(--green)':'var(--red)'};">${diff>=0?'+':''}${fmt(diff)} at retire</div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:2px;">Retire age ${sc.overrides.retireAge||c.retireAge} · ${sc.overrides.portfolioReturn||c.portfolioReturn}% return</div>
+    </div>`;
+  }).join('')}</div>`:'';
+
+  return `
+  ${savedCards}
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <div class="sec" style="margin:0;">Adjust levers · results update live</div>
+    <button class="btn sm" onclick="saveScenario()">💾 Save this scenario</button>
+  </div>
+  <div style="font-size:12px;color:var(--tx2);margin-bottom:12px;">Tweaks below are sandboxed — they don't touch the saved plan. Hit "Save this scenario" to store a named snapshot for comparison.</div>
+
+  <div class="scenario-card">
+    <div style="font-size:12px;font-weight:500;margin-bottom:10px;">Retirement timing</div>
+    <div class="sl-row"><div class="sl-lbl">Retire age</div><input type="range" min="50" max="75" step="1" value="${+c.retireAge||65}" id="sb_retAge" oninput="sbUpdate()"><div class="sl-val" id="sb_retAge_v">age ${+c.retireAge||65}</div></div>
+    <div class="sl-row"><div class="sl-lbl">Retirement expenses/mo</div><input type="range" min="2000" max="20000" step="500" value="${+c.monthlyExpenses||7000}" id="sb_exp" oninput="sbUpdate()"><div class="sl-val" id="sb_exp_v">${fmt(+c.monthlyExpenses||7000)}/mo</div></div>
+  </div>
+
+  <div class="scenario-card">
+    <div style="font-size:12px;font-weight:500;margin-bottom:10px;">Contributions</div>
+    <div class="sl-row"><div class="sl-lbl">Portfolio contrib/mo</div><input type="range" min="0" max="5000" step="100" value="${+c.monthlyPortfolioContrib||0}" id="sb_port" oninput="sbUpdate()"><div class="sl-val" id="sb_port_v">${fmt(+c.monthlyPortfolioContrib||0)}/mo</div></div>
+    <div class="sl-row"><div class="sl-lbl">Roth IRA contrib/mo</div><input type="range" min="0" max="700" step="50" value="${+c.monthlyRoth||0}" id="sb_roth" oninput="sbUpdate()"><div class="sl-val" id="sb_roth_v">${fmt(+c.monthlyRoth||0)}/mo</div></div>
+    <div class="sl-row"><div class="sl-lbl">Trad IRA contrib/mo</div><input type="range" min="0" max="700" step="50" value="${+c.monthlyIRA||0}" id="sb_ira" oninput="sbUpdate()"><div class="sl-val" id="sb_ira_v">${fmt(+c.monthlyIRA||0)}/mo</div></div>
+    <div class="sl-row"><div class="sl-lbl">Monthly 529 contrib</div><input type="range" min="0" max="2000" step="50" value="${+c.monthly529||0}" id="sb_529" oninput="sbUpdate()"><div class="sl-val" id="sb_529_v">${fmt(+c.monthly529||0)}/mo</div></div>
+  </div>
+
+  <div class="scenario-card">
+    <div style="font-size:12px;font-weight:500;margin-bottom:10px;">Market assumptions</div>
+    <div class="sl-row"><div class="sl-lbl">Expected return %</div><input type="range" min="3" max="12" step="0.5" value="${+c.portfolioReturn||7}" id="sb_ret" oninput="sbUpdate()"><div class="sl-val" id="sb_ret_v">${+c.portfolioReturn||7}%</div></div>
+    <div class="sl-row"><div class="sl-lbl">Lump sum event ($)</div><input type="range" min="0" max="500000" step="10000" value="0" id="sb_lump" oninput="sbUpdate()"><div class="sl-val" id="sb_lump_v">$0</div></div>
+    <div style="font-size:11px;color:var(--tx2);margin-top:4px;">Lump sum simulates inheritance, home sale, bonus, or other windfall added at year 1</div>
+  </div>
+
+  <div class="res-hl" style="margin-bottom:8px;">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;">
+      <div><div class="res-lbl">Portfolio at retire</div><div class="res-val g" id="sb_portVal">—</div></div>
+      <div><div class="res-lbl">vs current plan</div><div class="res-val" id="sb_diff">—</div></div>
+      <div><div class="res-lbl">Monthly income</div><div class="res-val" id="sb_income">—</div></div>
+      <div><div class="res-lbl">Surplus / shortfall</div><div class="res-val" id="sb_surplus">—</div></div>
+    </div>
+  </div>
+
+  <div class="chart-wrap" style="height:200px;"><canvas id="sbChart" role="img" aria-label="Scenario vs current plan">Scenario comparison chart.</canvas></div>`;
+}
+
+function sbUpdate(){
+  const c=clients[activeId];if(!c)return;
+  const retAge=+document.getElementById('sb_retAge')?.value||+c.retireAge||65;
+  const exp=+document.getElementById('sb_exp')?.value||+c.monthlyExpenses||7000;
+  const port=+document.getElementById('sb_port')?.value||0;
+  const roth=+document.getElementById('sb_roth')?.value||0;
+  const ira=+document.getElementById('sb_ira')?.value||0;
+  const s529=+document.getElementById('sb_529')?.value||0;
+  const ret=+document.getElementById('sb_ret')?.value||7;
+  const lump=+document.getElementById('sb_lump')?.value||0;
+
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('sb_retAge_v',`age ${retAge}`);
+  set('sb_exp_v',`${fmt(exp)}/mo`);
+  set('sb_port_v',`${fmt(port)}/mo`);
+  set('sb_roth_v',`${fmt(roth)}/mo`);
+  set('sb_ira_v',`${fmt(ira)}/mo`);
+  set('sb_529_v',`${fmt(s529)}/mo`);
+  set('sb_ret_v',`${ret}%`);
+  set('sb_lump_v',fmtF(lump));
+
+  const ytr=Math.max(1,retAge-(+c.age||45));
+  const infl=(+c.inflationRate||2.5)/100;
+  const overrides={retireAge,monthlyPortfolioContrib:port,monthlyRoth:roth,monthlyIRA:ira,portfolioReturn:ret};
+  const baseRM=retireMetrics(c);
+
+  // project with lump sum
+  let sbProj=projectAssets(c,ytr,overrides);
+  if(lump>0){sbProj=sbProj.map((v,i)=>i===0?v:v+lump);}
+  const sbPortfolio=sbProj[sbProj.length-1];
+  const monthExp=exp*Math.pow(1+infl,ytr);
+  const ssAnn=+c.annualSocialSecurity||0,penAnn=+c.pension||0;
+  const sbIncome=sbPortfolio*0.04/12+ssAnn/12+penAnn/12;
+  const sbSurplus=sbIncome-monthExp;
+  const diff=sbPortfolio-baseRM.portfolio;
+
+  set('sb_portVal',fmtF(sbPortfolio));
+  const diffEl=document.getElementById('sb_diff');
+  if(diffEl){diffEl.textContent=(diff>=0?'+':'')+fmt(diff);diffEl.style.color=diff>=0?'var(--green)':'var(--red)';}
+  set('sb_income',fmt(sbIncome));
+  const surEl=document.getElementById('sb_surplus');
+  if(surEl){surEl.textContent=(sbSurplus>=0?'+':'')+fmt(sbSurplus);surEl.style.color=sbSurplus>=0?'var(--green)':'var(--red)';}
+
+  const canvas=document.getElementById('sbChart');if(!canvas)return;
+  const baseYtr=Math.max(1,(+c.retireAge||65)-(+c.age||45));
+  const maxYtr=Math.max(ytr,baseYtr);
+  const lbs=Array.from({length:maxYtr+1},(_,i)=>(+c.age||45)+i);
+  const baseFull=projectAssets(c,maxYtr);
+  const sbFull=projectAssets(c,maxYtr,overrides).map((v,i)=>i===0?v:v+lump);
+  if(sandboxChartInst){sandboxChartInst.destroy();sandboxChartInst=null;}
+  sandboxChartInst=new Chart(canvas,{type:'line',data:{labels:lbs,datasets:[
+    {label:'Current plan',data:baseFull,borderColor:'#888780',borderDash:[4,4],backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:0,borderWidth:1.5},
+    {label:'Scenario',data:sbFull,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.07)',fill:true,tension:0.4,pointRadius:0,borderWidth:2}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,padding:10}}},scales:{x:{grid:{color:'rgba(128,128,128,0.07)'},ticks:{font:{size:10}}},y:{grid:{color:'rgba(128,128,128,0.07)'},ticks:{font:{size:10},callback:v=>fmt(v)}}}}});
+}
+
+function saveScenario(){
+  const c=clients[activeId];if(!c)return;
+  const overrides={
+    retireAge:+document.getElementById('sb_retAge')?.value||+c.retireAge,
+    monthlyPortfolioContrib:+document.getElementById('sb_port')?.value||0,
+    monthlyRoth:+document.getElementById('sb_roth')?.value||0,
+    monthlyIRA:+document.getElementById('sb_ira')?.value||0,
+    portfolioReturn:+document.getElementById('sb_ret')?.value||7,
+  };
+  document.getElementById('modalBox').innerHTML=`<div class="modal-title">Save scenario</div>
+    <div class="fg" style="margin-bottom:12px;"><div class="fl">Scenario name</div><input class="fi" id="scName" placeholder="e.g. Early retirement at 60, Max contributions..."></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn pri" onclick="confirmSaveScenario(${JSON.stringify(overrides).replace(/"/g,'&quot;')})">Save</button></div>`;
+  document.getElementById('modalOverlay').style.display='flex';
+  setTimeout(()=>document.getElementById('scName')?.focus(),50);
+}
+function confirmSaveScenario(overrides){
+  const c=clients[activeId];if(!c)return;
+  const name=document.getElementById('scName')?.value.trim();if(!name)return;
+  if(!c.scenarios)c.scenarios=[];
+  c.scenarios.push({name,overrides});
+  closeModal();save();renderTab();
+}
+function rmScenario(i){const c=clients[activeId];if(!c||!c.scenarios)return;c.scenarios.splice(i,1);renderTab();}
+function loadScenario(i){
+  const c=clients[activeId];if(!c||!c.scenarios?.[i])return;
+  const sc=c.scenarios[i];
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  if(sc.overrides.retireAge)set('sb_retAge',sc.overrides.retireAge);
+  if(sc.overrides.monthlyPortfolioContrib!==undefined)set('sb_port',sc.overrides.monthlyPortfolioContrib);
+  if(sc.overrides.monthlyRoth!==undefined)set('sb_roth',sc.overrides.monthlyRoth);
+  if(sc.overrides.monthlyIRA!==undefined)set('sb_ira',sc.overrides.monthlyIRA);
+  if(sc.overrides.portfolioReturn)set('sb_ret',sc.overrides.portfolioReturn);
+  sbUpdate();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB 6: GOALS
+// ════════════════════════════════════════════════════════════════════════════
+function goalsHTML(c){
+  const goals=c.goals||[];
+  let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:12px;color:var(--tx2);">${goals.length} goal${goals.length!==1?'s':''} tracked</div>
+    <button class="btn sm" onclick="addGoal()">+ Add goal</button>
+  </div>`;
+  if(!goals.length)return html+`<div class="no-data">No goals yet. Add one to start planning.</div>`;
+  goals.forEach((g,i)=>{
+    const years=+g.years||10,needed=+g.amount||0,saved=+g.saved||0,monthly=+g.monthly||0;
+    const monthlyNeeded=Math.max(0,(needed-saved)/Math.max(1,years*12));
+    const pct=Math.min(100,Math.round(saved/Math.max(1,needed)*100));
+    const projected=saved+monthly*years*12;
+    const onTrack=projected>=needed;
+    const solveMonthly=Math.ceil(Math.max(0,(needed-saved)/(years*12)));
+    html+=`<div class="goal-card">
+      <div class="goal-hdr">
+        <div>
+          <div class="goal-title">${escH(g.name||'Unnamed goal')}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px;">${escH(g.type||'General')} · ${years} yr · Target ${fmtF(needed)}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span class="badge ${onTrack?'g':'a'}">${onTrack?'On track':'Needs attention'}</span>
+          <button class="btn danger sm" onclick="rmGoal(${i})">✕</button>
+        </div>
+      </div>
+      <div class="pb-wrap"><div class="pb-fill${onTrack?'':pct>50?' a':' r'}" style="width:${pct}%;"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);margin-bottom:8px;">
+        <span>Saved: ${fmtF(saved)} (${pct}%)</span><span>Remaining: ${fmtF(Math.max(0,needed-saved))}</span>
+      </div>
+      <div class="g3" style="margin-bottom:8px;">
+        <div class="fg"><div class="fl">Amount saved</div><input class="fi" type="number" value="${saved}" oninput="updGoal(${i},'saved',+this.value)"></div>
+        <div class="fg"><div class="fl">Monthly contrib</div><input class="fi" type="number" value="${monthly}" oninput="updGoal(${i},'monthly',+this.value)"></div>
+        <div class="fg"><div class="fl">Monthly needed to hit goal</div><input class="fi" value="${fmtF(solveMonthly)}" readonly style="opacity:0.6;cursor:default;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--tx2);">
+        Projected at goal date: <span style="font-weight:500;color:${onTrack?'var(--green)':'var(--amber)'};">${fmtF(Math.round(projected))}</span>
+        ${!onTrack?` · To reach ${fmtF(needed)}, contribute <span style="font-weight:500;color:var(--tx1);">${fmtF(solveMonthly)}/mo</span>`:''}
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+function addGoal(){
+  document.getElementById('modalBox').innerHTML=`<div class="modal-title">Add financial goal</div>
+    <div class="fg" style="margin-bottom:8px;"><div class="fl">Goal name</div><input class="fi" id="gName" placeholder="e.g. New home down payment"></div>
+    <div class="fg" style="margin-bottom:8px;"><div class="fl">Type</div><select class="fi" id="gType"><option>Home purchase</option><option>Education</option><option>Emergency fund</option><option>Vacation</option><option>Business</option><option>Early retirement</option><option>General</option></select></div>
+    <div class="g2" style="margin-bottom:8px;">
+      <div class="fg"><div class="fl">Target amount ($)</div><input class="fi" id="gAmount" type="number" placeholder="100000"></div>
+      <div class="fg"><div class="fl">Time horizon (years)</div><input class="fi" id="gYears" type="number" placeholder="10"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><div class="fl">Already saved ($)</div><input class="fi" id="gSaved" type="number" placeholder="0"></div>
+      <div class="fg"><div class="fl">Monthly contribution ($)</div><input class="fi" id="gMonthly" type="number" placeholder="500"></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn pri" onclick="confirmAddGoal()">Add goal</button></div>`;
+  document.getElementById('modalOverlay').style.display='flex';
+  setTimeout(()=>document.getElementById('gName')?.focus(),50);
+}
+function confirmAddGoal(){
+  const c=clients[activeId];if(!c)return;if(!c.goals)c.goals=[];
+  c.goals.push({name:document.getElementById('gName').value,type:document.getElementById('gType').value,amount:+document.getElementById('gAmount').value,years:+document.getElementById('gYears').value,saved:+document.getElementById('gSaved').value,monthly:+document.getElementById('gMonthly').value});
+  closeModal();renderTab();
+}
+function rmGoal(i){const c=clients[activeId];if(!c||!c.goals)return;c.goals.splice(i,1);renderTab();}
+function updGoal(i,k,v){const c=clients[activeId];if(!c||!c.goals)return;c.goals[i][k]=v;renderTab();}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TAB 7: CLIENT NOTES
+// ════════════════════════════════════════════════════════════════════════════
+function notesHTML(c){
+  const n=c.notes||{};
+  const kids=n.kids||[],pets=n.pets||[],dates=n.dates||[],tags=n.tags||[];
+  const lastUpd=n.lastUpdated?new Date(n.lastUpdated).toLocaleDateString():'Never';
+
+  const kidsRows=kids.map((k,i)=>`<div class="dr">
+    <input class="fi" placeholder="Name" value="${escH(k.name||'')}" oninput="updNA('kids',${i},'name',this.value)" style="flex:1.2;">
+    <input class="fi" placeholder="Age" type="number" value="${k.age||''}" oninput="updNA('kids',${i},'age',this.value)" style="width:65px;flex:none;">
+    <input class="fi" placeholder="School, activities, notes..." value="${escH(k.notes||'')}" oninput="updNA('kids',${i},'notes',this.value)" style="flex:2;">
+    <button class="btn danger sm" onclick="rmNA('kids',${i})">✕</button>
+  </div>`).join('');
+
+  const petsRows=pets.map((p,i)=>`<div class="dr">
+    <input class="fi" placeholder="Name" value="${escH(p.name||'')}" oninput="updNA('pets',${i},'name',this.value)" style="flex:1.2;">
+    <input class="fi" placeholder="Type" value="${escH(p.type||'')}" oninput="updNA('pets',${i},'type',this.value)" style="flex:0.8;">
+    <input class="fi" placeholder="Age / breed / notes" value="${escH(p.notes||'')}" oninput="updNA('pets',${i},'notes',this.value)" style="flex:2;">
+    <button class="btn danger sm" onclick="rmNA('pets',${i})">✕</button>
+  </div>`).join('');
+
+  const dateRows=dates.map((d,i)=>`<div class="dr">
+    <input class="fi" placeholder="e.g. Anniversary, Birthday..." value="${escH(d.label||'')}" oninput="updNA('dates',${i},'label',this.value)" style="flex:2;">
+    <input class="fi" type="date" value="${d.date||''}" oninput="updNA('dates',${i},'date',this.value)" style="flex:1.2;">
+    <button class="btn danger sm" onclick="rmNA('dates',${i})">✕</button>
+  </div>`).join('');
+
+  const tagPills=tags.map((t,i)=>`<span class="tag-pill">${escH(t)}<button class="rm-tag" onclick="rmTag(${i})">×</button></span>`).join('');
+
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div style="font-size:11px;color:var(--tx2);">Last updated: ${lastUpd}</div>
+    <button class="btn sm" onclick="stampNotes()">Mark updated today</button>
+  </div>
+
+  <div class="notes-grid">
+    <div class="note-card">
+      <div class="note-card-hdr"><span style="font-size:16px;">👨‍👩‍👧</span><div class="note-card-ttl">Children</div></div>
+      ${kidsRows}
+      <button class="btn sm" style="margin-top:8px;" onclick="addNA('kids',{name:'',age:'',notes:''})">+ Add child</button>
+    </div>
+    <div class="note-card">
+      <div class="note-card-hdr"><span style="font-size:16px;">🐾</span><div class="note-card-ttl">Pets</div></div>
+      ${petsRows}
+      <button class="btn sm" style="margin-top:8px;" onclick="addNA('pets',{name:'',type:'',notes:''})">+ Add pet</button>
+    </div>
+  </div>
+
+  <div class="notes-full">
+    <div class="note-card-hdr" style="margin-bottom:8px;"><span style="font-size:16px;">📅</span><div class="note-card-ttl">Important dates</div></div>
+    ${dateRows}
+    <button class="btn sm" style="margin-top:4px;" onclick="addNA('dates',{label:'',date:''})">+ Add date</button>
+  </div>
+
+  <div class="notes-full">
+    <div class="note-card-hdr" style="margin-bottom:8px;">
+      <span style="font-size:16px;">🏷️</span><div class="note-card-ttl">Quick tags</div>
+      <span style="font-size:11px;color:var(--tx2);margin-left:auto;">Type and press Enter</span>
+    </div>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:6px;">Use tags for quick-reference attributes: business owner, rental income, trust beneficiary, recently divorced, etc.</div>
+    <div class="tag-wrap" onclick="document.getElementById('tagIn').focus()">
+      ${tagPills}
+      <input class="tag-input" id="tagIn" placeholder="${tags.length?'Add tag…':'business owner, divorcee, rental income…'}" onkeydown="handleTag(event)">
+    </div>
+  </div>
+
+  <div class="notes-grid">
+    <div class="note-card">
+      <div class="note-card-hdr"><span style="font-size:16px;">💼</span><div class="note-card-ttl">Work & career</div></div>
+      <textarea class="note-ta" placeholder="Employer, job stability, equity comp, bonus structure, upcoming changes…" oninput="updN('career',this.value)">${escH(n.career||'')}</textarea>
+    </div>
+    <div class="note-card">
+      <div class="note-card-hdr"><span style="font-size:16px;">🏥</span><div class="note-card-ttl">Health & insurance</div></div>
+      <textarea class="note-ta" placeholder="Health conditions, insurance coverage, long-term care needs, disability…" oninput="updN('health',this.value)">${escH(n.health||'')}</textarea>
+    </div>
+    <div class="note-card">
+      <div class="note-card-hdr"><span style="font-size:16px;">👨‍👩‍👧‍👦</span><div class="note-card-ttl">Family dynamics</div></div>
+      <textarea class="note-ta" placeholder="Extended family, aging parents, divorce, inheritance expectations, blended family…" oninput="updN('family',this.value)">${escH(n.family||'')}</textarea>
+    </div>
+    <div class="note-card">
+      <div class="note-card-hdr"><span style="font-size:16px;">✨</span><div class="note-card-ttl">Values & lifestyle</div></div>
+      <textarea class="note-ta" placeholder="Travel habits, philanthropy, hobbies, lifestyle priorities, legacy goals…" oninput="updN('lifestyle',this.value)">${escH(n.lifestyle||'')}</textarea>
+    </div>
+  </div>
+
+  <div class="notes-full">
+    <div class="note-card-hdr" style="margin-bottom:8px;"><span style="font-size:16px;">📝</span><div class="note-card-ttl">Advisor notes</div></div>
+    <textarea class="note-ta" style="min-height:130px;" placeholder="Meeting notes, action items, follow-ups, concerns, next steps…" oninput="updN('advisor',this.value)">${escH(n.advisor||'')}</textarea>
+  </div>`;
+}
+
+function ensureN(){if(!clients[activeId].notes)clients[activeId].notes={};}
+function updN(k,v){if(!activeId)return;ensureN();clients[activeId].notes[k]=v;}
+function addNA(k,obj){if(!activeId)return;ensureN();const n=clients[activeId].notes;if(!n[k])n[k]=[];n[k].push(obj);renderTab();}
+function rmNA(k,i){if(!activeId)return;ensureN();clients[activeId].notes[k].splice(i,1);renderTab();}
+function updNA(k,i,field,val){if(!activeId)return;ensureN();clients[activeId].notes[k][i][field]=val;}
+function handleTag(e){if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim().replace(/,$/,'');if(!v)return;ensureN();const n=clients[activeId].notes;if(!n.tags)n.tags=[];n.tags.push(v);e.target.value='';renderTab();}}
+function rmTag(i){if(!activeId)return;ensureN();clients[activeId].notes.tags.splice(i,1);renderTab();}
+function stampNotes(){if(!activeId)return;ensureN();clients[activeId].notes.lastUpdated=new Date().toISOString();renderTab();}
+
+// ── CLIENT CRUD ───────────────────────────────────────────────────────────────
+function openAddClient(){
+  document.getElementById('modalBox').innerHTML=`<div class="modal-title">Add new client</div>
+    <div class="fg" style="margin-bottom:8px;"><div class="fl">Full name</div><input class="fi" id="newName" placeholder="Jane & John Smith"></div>
+    <div class="fg"><div class="fl">Age</div><input class="fi" id="newAge" type="number" placeholder="45"></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn pri" onclick="confirmAdd()">Create client</button></div>`;
+  document.getElementById('modalOverlay').style.display='flex';
+  setTimeout(()=>document.getElementById('newName')?.focus(),50);
+}
+function confirmAdd(){
+  const name=document.getElementById('newName').value.trim();if(!name)return;
+  const age=+document.getElementById('newAge').value||45;
+  const id='c_'+Date.now();
+  clients[id]={...DEFAULTS,name,age,goals:[],holdings:[],scenarios:[]};
+  closeModal();save();renderSidebar();selectClient(id);
+}
+function deleteClient(){
+  if(!activeId)return;
+  document.getElementById('modalBox').innerHTML=`<div class="modal-title">Remove client?</div>
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:16px;">Permanently delete ${escH(clients[activeId].name||'this client')}'s data?</div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn danger" onclick="confirmDelete()">Delete</button></div>`;
+  document.getElementById('modalOverlay').style.display='flex';
+}
+function confirmDelete(){
+  delete clients[activeId];activeId=null;closeModal();save();
+  document.getElementById('noClient').style.display='flex';
+  document.getElementById('clientView').style.display='none';
+  renderSidebar();
+}
+function closeModal(){document.getElementById('modalOverlay').style.display='none';}
+document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+load();
+</script>
+</body>
+</html>
